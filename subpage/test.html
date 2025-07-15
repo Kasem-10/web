@@ -2,94 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Jump 'n' Run Game</title>
+    <title>Game Hub</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #222; }
-        canvas { display: block; margin: 0 auto; background: #87ceeb; }
+        body { margin: 0; background: #111; color: #fff; font-family: Arial, sans-serif; }
+        #gameSelector { text-align: center; margin-top: 40px; }
+        .game-btn { font-size: 1.2em; padding: 12px 32px; margin: 10px; cursor: pointer; border: none; border-radius: 6px; background: #222; color: #fff; }
+        .game-btn:hover { background: #0af; }
+        #gameContainer { display: none; margin-top: 30px; }
+        #backBtn { margin-top: 20px; font-size: 1em; padding: 8px 16px; }
     </style>
 </head>
 <body>
-<canvas id="game" width="800" height="400"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-
-const GRAVITY = 0.7;
-const JUMP = -12;
-const PLAYER = { x: 50, y: 300, w: 40, h: 40, vy: 0, onGround: false };
-const PLATFORMS = [
-    { x: 0, y: 350, w: 800, h: 50 },
-    { x: 200, y: 280, w: 120, h: 20 },
-    { x: 400, y: 220, w: 120, h: 20 },
-    { x: 600, y: 160, w: 120, h: 20 }
-];
-let keys = {};
-
-document.addEventListener('keydown', e => keys[e.code] = true);
-document.addEventListener('keyup', e => keys[e.code] = false);
-
-function rectsCollide(a, b) {
-    return a.x < b.x + b.w && a.x + a.w > b.x &&
-                 a.y < b.y + b.h && a.y + a.h > b.y;
-}
-
-function updatePlayer() {
-    // Horizontal movement
-    if (keys['ArrowRight'] || keys['KeyD']) PLAYER.x += 5;
-    if (keys['ArrowLeft'] || keys['KeyA']) PLAYER.x -= 5;
-
-    // Jump
-    if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && PLAYER.onGround) {
-        PLAYER.vy = JUMP;
-        PLAYER.onGround = false;
-    }
-
-    // Gravity
-    PLAYER.vy += GRAVITY;
-    PLAYER.y += PLAYER.vy;
-
-    // Platform collision
-    PLAYER.onGround = false;
-    for (const plat of PLATFORMS) {
-        const nextPlayer = { ...PLAYER, y: PLAYER.y + 1 };
-        if (rectsCollide(nextPlayer, plat) && PLAYER.vy >= 0) {
-            PLAYER.y = plat.y - PLAYER.h;
-            PLAYER.vy = 0;
-            PLAYER.onGround = true;
+    <div id="gameSelector">
+        <h1>Select a Game</h1>
+        <button class="game-btn" onclick="showGame('spaceDefender')">Space Defender</button>
+        <button class="game-btn" onclick="showGame('pong')">Pong</button>
+        <!-- Add more games here -->
+    </div>
+    <div id="gameContainer">
+        <button id="backBtn" onclick="backToMenu()">Back to Menu</button>
+        <div id="gameArea"></div>
+    </div>
+    <script>
+        function showGame(game) {
+            document.getElementById('gameSelector').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            loadGame(game);
         }
-    }
-
-    // Boundaries
-    if (PLAYER.x < 0) PLAYER.x = 0;
-    if (PLAYER.x + PLAYER.w > canvas.width) PLAYER.x = canvas.width - PLAYER.w;
-    if (PLAYER.y + PLAYER.h > canvas.height) {
-        PLAYER.y = canvas.height - PLAYER.h;
-        PLAYER.vy = 0;
-        PLAYER.onGround = true;
-    }
-}
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw platforms
-    ctx.fillStyle = '#654321';
-    for (const plat of PLATFORMS) {
-        ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
-    }
-
-    // Draw player
-    ctx.fillStyle = '#ff0';
-    ctx.fillRect(PLAYER.x, PLAYER.y, PLAYER.w, PLAYER.h);
-}
-
-function loop() {
-    updatePlayer();
-    draw();
-    requestAnimationFrame(loop);
-}
-
-loop();
-</script>
+        function backToMenu() {
+            document.getElementById('gameSelector').style.display = 'block';
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('gameArea').innerHTML = '';
+        }
+        function loadGame(game) {
+            const area = document.getElementById('gameArea');
+            area.innerHTML = '';
+            if (game === 'spaceDefender') {
+                area.innerHTML = `
+                    <canvas id="game" width="600" height="800"></canvas>
+                    <div id="ui">
+                        <span id="score">Score: 0</span>
+                        <span id="lives">Lives: 3</span>
+                        <div id="gameOver" style="display:none;font-size:2em;color:#f33;margin-top:20px;">
+                            Game Over!<br>
+                            <button onclick="restartGame()">Restart</button>
+                        </div>
+                    </div>
+                `;
+                // Space Defender game code (same as your previous code)
+                // To keep it short, you can move your previous <script> code here
+                // For demo, only the structure is shown
+                // --- Paste your Space Defender JS code here ---
+                // (You may need to scope variables/functions to avoid conflicts)
+            } else if (game === 'pong') {
+                area.innerHTML = `
+                    <canvas id="pongCanvas" width="600" height="400"></canvas>
+                    <div id="pongUI" style="text-align:center;margin-top:10px;">
+                        <span id="pongScore">Score: 0</span>
+                        <div id="pongGameOver" style="display:none;font-size:2em;color:#f33;margin-top:20px;">
+                            Game Over!<br>
+                            <button onclick="pongRestart()">Restart</button>
+                        </div>
+                    </div>
+                `;
+                // Simple Pong game code
+                let pongCanvas = document.getElementById('pongCanvas');
+                let pongCtx = pongCanvas.getContext('2d');
+                let pongScore = 0, pongGameRunning = true;
+                let pongBall = {x:300, y:200, vx:4, vy:4, r:10};
+                let pongPaddle = {x:280, y:380, w:80, h:10};
+                function pongDraw() {
+                    pongCtx.clearRect(0,0,600,400);
+                    pongCtx.fillStyle = '#fff';
+                    pongCtx.beginPath();
+                    pongCtx.arc(pongBall.x, pongBall.y, pongBall.r, 0, Math.PI*2);
+                    pongCtx.fill();
+                    pongCtx.fillRect(pongPaddle.x, pongPaddle.y, pongPaddle.w, pongPaddle.h);
+                }
+                function pongUpdate() {
+                    pongBall.x += pongBall.vx;
+                    pongBall.y += pongBall.vy;
+                    if (pongBall.x < pongBall.r || pongBall.x > 600-pongBall.r) pongBall.vx *= -1;
+                    if (pongBall.y < pongBall.r) pongBall.vy *= -1;
+                    if (pongBall.y > 400-pongBall.r) {
+                        pongGameRunning = false;
+                        document.getElementById('pongGameOver').style.display = 'block';
+                    }
+                    if (pongBall.y + pongBall.r > pongPaddle.y &&
+                        pongBall.x > pongPaddle.x &&
+                        pongBall.x < pongPaddle.x + pongPaddle.w) {
+                        pongBall.vy *= -1;
+                        pongScore++;
+                        document.getElementById('pongScore').textContent = 'Score: ' + pongScore;
+                    }
+                }
+                function pongLoop() {
+                    if (pongGameRunning) {
+                        pongUpdate();
+                        pongDraw();
+                        requestAnimationFrame(pongLoop);
+                    }
+                }
+                document.addEventListener('mousemove', function(e) {
+                    let rect = pongCanvas.getBoundingClientRect();
+                    let mx = e.clientX - rect.left;
+                    pongPaddle.x = Math.max(0, Math.min(600-pongPaddle.w, mx - pongPaddle.w/2));
+                });
+                window.pongRestart = function() {
+                    pongScore = 0;
+                    pongBall = {x:300, y:200, vx:4, vy:4, r:10};
+                    pongGameRunning = true;
+                    document.getElementById('pongScore').textContent = 'Score: 0';
+                    document.getElementById('pongGameOver').style.display = 'none';
+                    pongLoop();
+                };
+                pongLoop();
+            }
+        }
+    </script>
 </body>
 </html>
