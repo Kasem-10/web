@@ -1,129 +1,43 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Meine Erste Website</title>
-  <style>
-    body {
-      background-color: powderblue;
-      font-family: Verdana, sans-serif;
-      color: #333;
-      margin: 20px;
-    }
-    h1 {
-      color: blue;
-    }
-    p {
-      color: red;
-      font-family: Courier, monospace;
-    }
-    strong {
-      font-weight: bold;
-    }
-    em {
-      font-style: italic;
-    }
-    u {
-      text-decoration: underline;
-    }
-    small {
-      font-size: smaller;
-    }
-    mark {
-      background-color: yellow;
-    }
-    blockquote {
-      border-left: 4px solid #ccc;
-      margin-left: 0;
-      padding-left: 1em;
-      color: #555;
-      font-style: italic;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-    }
-    video, iframe {
-      display: block;
-      margin: 20px 0;
-      max-width: 100%;
-    }
-  </style>
-</head>
-<body>
-  <h1>This is a heading</h1>
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
 
-  <p>This is a paragraph.</p>
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
 
-  <strong>This text is strong</strong>
-  <hr>
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
-  <em>This text is italic</em>
-  <hr>
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
-  <u>This text is underlined</u>
-  <hr>
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
-  <small>very very small</small>
-  <hr>
-
-  <p>Do not forget to buy <mark>milk</mark> today.</p>
-  <hr>
-
-  <p>Here is a quote from WWF's website:</p>
-  <blockquote cite="http://www.worldwildlife.org/who/index.html">
-    For 60 years, WWF has worked to help people and nature thrive. As the world's leading conservation organization, WWF works in nearly 100 countries. At every level, we collaborate with people around the world to develop and deliver innovative solutions that protect communities, wildlife, and the places in which they live.
-  </blockquote>
-
-  <hr>
-
-  <img src="programming.gif" alt="Computer Man" style="width:180px; height:180px;" />
-  
-  <hr>
-
-  <a href="default.asp">
-    <img src="assets/smiley.gif" alt="HTML tutorial" style="width:260px; height:260px;" />
-  </a>
-
-  <hr>
-
-  <img src="workplace.jpg" alt="Workplace" usemap="#workmap" />
-  <map name="workmap">
-    <area shape="rect" coords="34,44,270,350" alt="Computer" href="computer.htm" />
-    <area shape="rect" coords="290,172,333,250" alt="Phone" href="phone.htm" />
-    <area shape="circle" coords="337,300,44" alt="Coffee" href="coffee.htm" />
-  </map>
-
-  <hr>
-
-  <video width="320" height="240" controls>
-    <source src="movie.mp4" type="video/mp4" />
-    <source src="movie.ogg" type="video/ogg" />
-    Dein Browser unterstützt das Video-Tag nicht.
-  </video>
-
-  <hr>
-
-  <iframe width="420" height="315" src="https://www.youtube.com/embed/tgbNymZ7vqY" title="YouTube Video" allowfullscreen></iframe>
-
-</body>
-</html>
-
-<!DOCTYPE html>
-<html>
-<head>
-<script>
-function myFunction() {
-  document.getElementById("demo").innerHTML = "Paragraph changed.";
-}
-</script>
-</head>
-<body>
-<h2>Demo JavaScript in Head</h2>
-
-<p id="demo">A Paragraph</p>
-<button type="button" onclick="myFunction()">Try it</button>
-
-</body>
-</html>
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
