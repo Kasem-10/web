@@ -1,0 +1,44 @@
+    body {
+      background-color: black;
+      font-weight: bold;
+      color: white;
+      margin: 20px;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      color: white;
+    }
+    p {
+      font-family: Courier, monospace;
+    }
+    strong {
+      font-weight: bold;
+    }
+    em {
+      font-style: italic;
+    }
+    u {
+      text-decoration: underline;
+    }
+    small {
+      font-size: smaller;
+    }
+    mark {
+      background-color: black;
+    }
+    blockquote {
+      border-left: 4px solid #ccc;
+      margin-left: 0;
+      padding-left: 1em;
+      color: #aaa;
+      font-style: italic;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    video, iframe {
+      display: block;
+      margin: 20px 0;
+      max-width: 100%;
+    }
