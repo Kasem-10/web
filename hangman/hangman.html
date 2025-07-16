@@ -1,75 +1,829 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🎮 Game Hub Deluxe</title>
-  <!-- <script src="https://cdn.tailwindcss.com"></script> -->
-  <script src="functions.js"></script>
   <style>
-    body {
-      background: linear-gradient(to right, #667eea, #764ba2);
+
+
+
+
+    space-defender-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: linear-gradient(135deg, #001f3f, #0074D9);
+  border-radius: 15px;
+  box-shadow: 0 0 30px #00d4ffaa;
+  padding: 1rem;
+  color: #00d4ff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+}
+
+#space-defender-canvas {
+  display: block;
+  margin: 1rem auto;
+  background-color: #001020;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #00d4ffcc;
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+}
+
+#space-defender-info {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  color: #00bfff;
+}
+    /* === RESET & BASE === */
+    * {
+      box-sizing: border-box;
+    }
+    body, html {
+      margin: 0; padding: 0;
+      height: 100%;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #2c3e50, #4ca1af);
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
-    .game-button {
-      padding: 0.75rem 1.5rem;
-      color: #fff;
-      font-size: 1.125rem;
-      font-weight: 600;
-      border-radius: 0.5rem;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
-      background: linear-gradient(to right, #ff6a00, #ee0979);
+    h1, h2 {
+      margin: 0 0 1rem 0;
+      font-weight: 900;
+      text-align: center;
+      text-shadow: 0 0 8px #ff6a00;
+    }
+
+    /* === CONTAINER === */
+    main {
+      flex-grow: 1;
+      padding: 20px;
+      max-width: 900px;
+      margin: 0 auto 40px;
+      background: rgba(255 255 255 / 0.05);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 30px rgba(255, 106, 0, 0.3);
+    }
+
+    /* === GAME NAVIGATION BUTTONS === */
+    nav {
+      text-align: center;
+      margin-bottom: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+    nav button {
+      background: linear-gradient(45deg, #ff6a00, #ee0979);
       border: none;
+      padding: 14px 30px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      border-radius: 12px;
       cursor: pointer;
+      color: #fff;
+      box-shadow: 0 6px 15px rgba(255, 106, 0, 0.6);
+      transition: all 0.3s ease;
+      user-select: none;
     }
-    .game-button:hover {
-      background: linear-gradient(to right, #ee0979, #ff6a00);
+    nav button:hover, nav button:focus {
+      background: linear-gradient(45deg, #ee0979, #ff6a00);
+      outline: none;
+      transform: scale(1.1);
+      box-shadow: 0 8px 20px rgba(255, 106, 0, 0.9);
+    }
+
+    /* === SECTION - GAME CONTAINER === */
+    section.game {
+      display: none;
+      padding: 10px 20px 30px;
+      background: rgba(0 0 0 / 0.3);
+      border-radius: 15px;
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.1);
+      user-select: none;
+    }
+    section.game.active {
+      display: block;
+    }
+
+    /* === TIC TAC TOE === */
+    #tictactoe {
+      max-width: 360px;
+      margin: 0 auto;
+    }
+    #ttt-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    #ttt-board button {
+      background: linear-gradient(145deg, #ff6a00, #ee0979);
+      border: none;
+      border-radius: 15px;
+      font-size: 3rem;
+      font-weight: 900;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 15px #ff6a00;
+      transition: transform 0.2s, box-shadow 0.2s;
+      aspect-ratio: 1/1;
+    }
+    #ttt-board button:hover:not(:disabled) {
       transform: scale(1.05);
+      box-shadow: 0 7px 20px #ff8c42;
     }
-    .glass {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
+    #ttt-board button:disabled {
+      cursor: default;
+      background: #444;
+      box-shadow: none;
+      color: #ccc;
     }
-    .glow-text {
-      text-shadow: 0 0 10px #fff, 0 0 20px #ff00ff;
+    #ttt-status {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      min-height: 2rem;
+      text-shadow: 0 0 8px #ff6a00;
+    }
+    #ttt-restart {
+      display: block;
+      margin: 25px auto 0;
+      padding: 12px 30px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      background: #ff6a00;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 15px #ff6a00;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    #ttt-restart:hover {
+      background: #ee4500;
+    }
+
+    /* === MEMORY MATCH === */
+    #memory-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 15px;
+      max-width: 420px;
+      margin: 0 auto;
     }
     #memory-board button {
+      background: linear-gradient(145deg, #ee0979, #ff6a00);
+      border: none;
+      border-radius: 12px;
       font-size: 2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(238,9,121,0.7);
+      color: transparent;
+      user-select: none;
+      aspect-ratio: 1/1;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    /* Hangman styles for real hangman figure */
+    #memory-board button.flipped,
+    #memory-board button.matched {
+      color: white;
+      background: linear-gradient(145deg, #ff6a00, #ee0979);
+      box-shadow: 0 6px 20px #ff6a00;
+      cursor: default;
+      transform: scale(1.05);
+    }
+    #memory-board button:hover:not(.flipped):not(.matched) {
+      transform: scale(1.1);
+      box-shadow: 0 6px 18px #ff6a00;
+    }
+
+    /* === HANGMAN === */
     #hangman-canvas {
       display: block;
-      margin: 0 auto 10px auto;
+      margin: 0 auto 15px;
       background: #222;
+      border-radius: 20px;
+      box-shadow: 0 0 15px #ff6a00;
+      max-width: 320px;
+      aspect-ratio: 1/1;
+      width: 100%;
+    }
+    #hangman-letters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+    #hangman-letters button {
+      background: linear-gradient(45deg, #ff6a00, #ee0979);
+      border: none;
+      padding: 10px 15px;
+      font-size: 1.2rem;
+      font-weight: 700;
       border-radius: 10px;
-    }
-    /* Rock Paper Scissors images */
-    .rps-img {
-      width: 80px;
+      color: white;
       cursor: pointer;
-      filter: drop-shadow(1px 1px 2px black);
-      transition: transform 0.2s;
+      box-shadow: 0 4px 12px #ff6a00;
+      user-select: none;
+      transition: transform 0.25s ease;
+      min-width: 40px;
+      text-transform: uppercase;
     }
-    .rps-img:hover {
+    #hangman-letters button:hover:not(:disabled) {
       transform: scale(1.1);
+      box-shadow: 0 6px 20px #ff6a00;
     }
+    #hangman-letters button:disabled {
+      cursor: default;
+      background: #555;
+      color: #aaa;
+      box-shadow: none;
+    }
+    #hangman-status {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #ff6a00;
+      text-shadow: 0 0 10px #ff6a00;
+      min-height: 2rem;
+      user-select: none;
+    }
+    #hangman-restart {
+      display: block;
+      margin: 20px auto 0;
+      padding: 12px 30px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      background: #ff6a00;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 15px #ff6a00;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    #hangman-restart:hover {
+      background: #ee4500;
+    }
+
+    /* === GUESS THE NUMBER === */
+    #guessnumber .guess-container {
+      max-width: 320px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    #guessnumber input[type="number"] {
+      padding: 10px;
+      font-size: 1.4rem;
+      width: 120px;
+      border-radius: 10px;
+      border: none;
+      text-align: center;
+      margin-bottom: 15px;
+      user-select: text;
+    }
+    #guessnumber button.guess-button {
+      padding: 12px 28px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      border-radius: 15px;
+      border: none;
+      background: linear-gradient(45deg, #ff6a00, #ee0979);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 15px #ff6a00;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    #guessnumber button.guess-button:hover {
+      background: #ee4500;
+    }
+    #guess-result {
+      margin-top: 20px;
+      font-size: 1.3rem;
+      min-height: 2rem;
+      color: #ff6a00;
+      font-weight: 700;
+      text-shadow: 0 0 10px #ff6a00;
+      user-select: none;
+    }
+
+    /* === ROCK PAPER SCISSORS === */
+    #rps .rps-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    #rps .rps-choice {
+      cursor: pointer;
+      width: 150px;
+      height: 150px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px #ff6a00;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      object-fit: contain;
+      user-select: none;
+      border: 3px solid transparent;
+      background: linear-gradient(145deg, #ff6a00, #ee0979);
+      padding: 20px;
+    }
+    #rps .rps-choice:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 30px #ff6a00;
+      border-color: white;
+    }
+    #rps-result {
+      margin-top: 25px;
+      font-size: 1.6rem;
+      text-align: center;
+      font-weight: 700;
+      color: #ff6a00;
+      text-shadow: 0 0 12px #ff6a00;
+      user-select: none;
+    }
+
+    /* === SPACE DEFENDER PLACEHOLDER === */
+    #space {
+  /* Stelle sicher, dass die Sektion genug Platz hat und nicht nur Textstil bekommt */
+  position: relative;
+  padding: 20px;
+  background-color: #000; /* Schwarzer Hintergrund für Space Defender */
+  min-height: 450px; /* Genug Platz für das Canvas */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#space canvas {
+  background-color: #000;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #0ff;
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center">
-  <div class="w-full max-w-4xl p-6 rounded-2xl shadow-xl glass border border-white/20">
-    <h1 class="text-center text-4xl font-bold text-white mb-8 glow-text">🎮 Game Hub Deluxe</h1>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 justify-items-center">
-      <button class="game-button" onclick="startGame('hangman')">Hangman</button>
-      <button class="game-button" onclick="startGame('ticTacToe')">Tic Tac Toe</button>
-      <button class="game-button" onclick="startGame('memory')">Memory Match</button>
-      <button class="game-button" onclick="startGame('guessNumber')">Guess Number</button>
-      <button class="game-button" onclick="startGame('rockPaperScissors')">Rock Paper Scissors</button>
-      <button class="game-button" onclick="startGame('spaceDefender')">Space Defender</button>
-    </div>
-    <div id="game-area" class="mt-10 bg-white/20 p-6 rounded-xl text-white min-h-[350px]"></div>
+<body>
+
+  <main>
+    <h1>🎮 Game Hub Deluxe</h1>
+    <nav aria-label="Spiele auswählen">
+      <button type="button" data-game="tictactoe">Tic Tac Toe</button>
+      <button type="button" data-game="memory">Memory Match</button>
+      <button type="button" data-game="hangman">Hangman</button>
+      <button type="button" data-game="guessnumber">Guess the Number</button>
+      <button type="button" data-game="rps">Rock Paper Scissors</button>
+      <button type="button" data-game="space">Space Defender</button>
+    </nav>
+
+    <!-- TIC TAC TOE -->
+    <section id="tictactoe" class="game" aria-label="Tic Tac Toe Spiel">
+      <div id="ttt-board" role="grid" aria-label="Tic Tac Toe Spielfeld">
+        <button role="gridcell" aria-label="Feld 1" data-index="0"></button>
+        <button role="gridcell" aria-label="Feld 2" data-index="1"></button>
+        <button role="gridcell" aria-label="Feld 3" data-index="2"></button>
+        <button role="gridcell" aria-label="Feld 4" data-index="3"></button>
+        <button role="gridcell" aria-label="Feld 5" data-index="4"></button>
+        <button role="gridcell" aria-label="Feld 6" data-index="5"></button>
+        <button role="gridcell" aria-label="Feld 7" data-index="6"></button>
+        <button role="gridcell" aria-label="Feld 8" data-index="7"></button>
+        <button role="gridcell" aria-label="Feld 9" data-index="8"></button>
+      </div>
+      <div id="ttt-status" aria-live="polite"></div>
+      <button id="ttt-restart">Neu starten</button>
+    </section>
+
+    <!-- MEMORY MATCH -->
+    <section id="memory" class="game" aria-label="Memory Spiel">
+      <div id="memory-board" aria-live="polite" aria-label="Memory Karten"></div>
+    </section>
+
+    <!-- HANGMAN -->
+    <section id="hangman" class="game" aria-label="Hangman Spiel">
+      <canvas id="hangman-canvas" width="300" height="300" aria-label="Hangman Zeichnung"></canvas>
+      <div id="hangman-word" aria-live="polite" style="letter-spacing: 0.2em; font-size: 1.5rem; text-align: center; user-select:none;"></div>
+      <div id="hangman-letters" aria-label="Buchstabenauswahl"></div>
+      <div id="hangman-status" aria-live="polite"></div>
+      <button id="hangman-restart">Neu starten</button>
+    </section>
+
+    <!-- GUESS THE NUMBER -->
+    <section id="guessnumber" class="game" aria-label="Zahl Raten Spiel">
+      <div class="guess-container">
+        <input type="number" id="guess-input" min="1" max="100" placeholder="1 - 100" aria-label="Zahl eingeben" />
+        <button class="guess-button" id="guess-btn">Raten</button>
+        <div id="guess-result" aria-live="polite"></div>
+      </div>
+      <button id="guess-restart" style="margin-top:20px; background:#ff6a00; border:none; border-radius:12px; padding:12px 28px; font-weight:700; font-size:1.2rem; cursor:pointer; color:#fff; box-shadow: 0 5px 15px #ff6a00;">Neu starten</button>
+    </section>
+
+    <!-- ROCK PAPER SCISSORS -->
+    <section id="rps" class="game" aria-label="Schere Stein Papier Spiel">
+      <div class="rps-container" role="list" aria-label="Auswahl Stein, Papier, Schere">
+        <img src="rock.png" alt="Stein" class="rps-choice" data-choice="rock" role="listitem" tabindex="0" />
+        <img src="paper.png" alt="Papier" class="rps-choice" data-choice="paper" role="listitem" tabindex="0" />
+        <img src="scissors.png" alt="Schere" class="rps-choice" data-choice="scissors" role="listitem" tabindex="0" />
+      </div>
+      <div id="rps-result" aria-live="polite"></div>
+      <button id="rps-restart" style="margin-top: 20px; background:#ff6a00; border:none; border-radius:12px; padding:12px 28px; font-weight:700; font-size:1.2rem; cursor:pointer; color:#fff; box-shadow: 0 5px 15px #ff6a00;">Neu starten</button>
+    </section>
+
+    <section id="space" style="display:none;">
+  <h2 class="ttt-title">Space Defender</h2>
+  <div id="space-defender-container">
+    <canvas id="space-defender-canvas" width="600" height="400"></canvas>
+    <div id="space-defender-info">Steuere dein Raumschiff mit Pfeiltasten und feuere mit Leertaste!</div>
   </div>
+</section>
 
 
+
+
+
+
+
+
+  <script>
+    (() => {
+      // --- NAVIGATION ---
+      const navButtons = document.querySelectorAll('nav button');
+      const games = document.querySelectorAll('section.game');
+
+      function showGame(gameId) {
+        games.forEach(s => s.classList.toggle('active', s.id === gameId));
+      }
+      // Start mit Tic Tac Toe
+      showGame('tictactoe');
+
+      navButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          showGame(btn.dataset.game);
+        });
+      });
+
+      // === TIC TAC TOE LOGIC ===
+      const tttBoard = document.getElementById('ttt-board');
+      const tttCells = Array.from(tttBoard.querySelectorAll('button'));
+      const tttStatus = document.getElementById('ttt-status');
+      const tttRestart = document.getElementById('ttt-restart');
+
+      let tttTurn = 'X';
+      let tttBoardState = Array(9).fill(null);
+      let tttGameOver = false;
+
+      function checkTicTacToeWinner(board) {
+        const wins = [
+          [0,1,2],[3,4,5],[6,7,8],
+          [0,3,6],[1,4,7],[2,5,8],
+          [0,4,8],[2,4,6]
+        ];
+        for (const [a,b,c] of wins) {
+          if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return board[a];
+          }
+        }
+        if (board.every(cell => cell !== null)) return 'Draw';
+        return null;
+      }
+
+      function updateTicTacToe() {
+        tttCells.forEach((cell, i) => {
+          cell.textContent = tttBoardState[i] || '';
+          cell.disabled = !!tttBoardState[i] || tttGameOver;
+        });
+        const winner = checkTicTacToeWinner(tttBoardState);
+        if (winner) {
+          tttGameOver = true;
+          if (winner === 'Draw') {
+            tttStatus.textContent = "Unentschieden!";
+          } else {
+            tttStatus.textContent = `Spieler ${winner} gewinnt!`;
+          }
+          tttCells.forEach(c => c.disabled = true);
+        } else {
+          tttStatus.textContent = `Spieler ${tttTurn} ist am Zug.`;
+        }
+      }
+
+      tttCells.forEach(cell => {
+        cell.addEventListener('click', () => {
+          if (tttGameOver || tttBoardState[cell.dataset.index]) return;
+          tttBoardState[cell.dataset.index] = tttTurn;
+          tttTurn = tttTurn === 'X' ? 'O' : 'X';
+          updateTicTacToe();
+        });
+      });
+
+      tttRestart.addEventListener('click', () => {
+        tttBoardState.fill(null);
+        tttGameOver = false;
+        tttTurn = 'X';
+        updateTicTacToe();
+      });
+
+      updateTicTacToe();
+
+      // === MEMORY MATCH LOGIC ===
+      const memoryBoard = document.getElementById('memory-board');
+      const memoryCards = [
+        '🍎','🍌','🍇','🍓','🥝','🍍','🍑','🍒'
+      ];
+      let memoryDeck = [];
+      let memoryFlipped = [];
+      let memoryMatchedCount = 0;
+      let memoryBusy = false;
+
+      function shuffle(array) {
+        for(let i=array.length-1; i>0; i--){
+          const j = Math.floor(Math.random() * (i+1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function startMemory() {
+        memoryDeck = shuffle([...memoryCards, ...memoryCards]);
+        memoryBoard.innerHTML = '';
+        memoryFlipped = [];
+        memoryMatchedCount = 0;
+        memoryBusy = false;
+        for(let i=0; i<memoryDeck.length; i++) {
+          const btn = document.createElement('button');
+          btn.textContent = '';
+          btn.setAttribute('aria-label', 'Karte umdrehen');
+          btn.classList.remove('flipped','matched');
+          btn.addEventListener('click', () => {
+            if(memoryBusy || btn.classList.contains('flipped') || btn.classList.contains('matched')) return;
+            flipCard(btn, i);
+          });
+          memoryBoard.appendChild(btn);
+        }
+      }
+
+      function flipCard(button, index) {
+        if(memoryFlipped.length >= 2) return;
+        button.textContent = memoryDeck[index];
+        button.classList.add('flipped');
+        memoryFlipped.push({btn: button, idx: index});
+        if(memoryFlipped.length === 2) {
+          memoryBusy = true;
+          setTimeout(checkMemoryMatch, 1000);
+        }
+      }
+
+      function checkMemoryMatch() {
+        const [first, second] = memoryFlipped;
+        if(memoryDeck[first.idx] === memoryDeck[second.idx]) {
+          first.btn.classList.add('matched');
+          second.btn.classList.add('matched');
+          memoryMatchedCount += 2;
+        } else {
+          first.btn.textContent = '';
+          second.btn.textContent = '';
+          first.btn.classList.remove('flipped');
+          second.btn.classList.remove('flipped');
+        }
+        memoryFlipped = [];
+        memoryBusy = false;
+        if(memoryMatchedCount === memoryDeck.length) {
+          setTimeout(() => alert('Glückwunsch, du hast Memory gewonnen! 🎉'), 300);
+        }
+      }
+
+      startMemory();
+
+      // === HANGMAN LOGIC ===
+      const hangmanCanvas = document.getElementById('hangman-canvas');
+      const ctx = hangmanCanvas.getContext('2d');
+      const hangmanWordEl = document.getElementById('hangman-word');
+      const hangmanLettersEl = document.getElementById('hangman-letters');
+      const hangmanStatus = document.getElementById('hangman-status');
+      const hangmanRestart = document.getElementById('hangman-restart');
+
+      const hangmanWords = [
+        "javascript", "computer", "programmieren", "chatgpt", "spiel", "developer", "hangman"
+      ];
+
+      let hangmanWord = '';
+      let guessedLetters = new Set();
+      let wrongGuesses = 0;
+      const maxWrong = 6;
+
+      function pickHangmanWord() {
+        return hangmanWords[Math.floor(Math.random() * hangmanWords.length)];
+      }
+
+      function drawHangman() {
+        ctx.clearRect(0,0,hangmanCanvas.width, hangmanCanvas.height);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#ff6a00';
+
+        // gallows
+        ctx.beginPath();
+        ctx.moveTo(50, 280);
+        ctx.lineTo(250, 280);
+        ctx.moveTo(100, 280);
+        ctx.lineTo(100, 50);
+        ctx.lineTo(200, 50);
+        ctx.lineTo(200, 90);
+        ctx.stroke();
+
+        if (wrongGuesses > 0) { // head
+          ctx.beginPath();
+          ctx.arc(200, 110, 20, 0, Math.PI*2);
+          ctx.stroke();
+        }
+        if (wrongGuesses > 1) { // body
+          ctx.beginPath();
+          ctx.moveTo(200, 130);
+          ctx.lineTo(200, 200);
+          ctx.stroke();
+        }
+        if (wrongGuesses > 2) { // left arm
+          ctx.beginPath();
+          ctx.moveTo(200, 150);
+          ctx.lineTo(170, 180);
+          ctx.stroke();
+        }
+        if (wrongGuesses > 3) { // right arm
+          ctx.beginPath();
+          ctx.moveTo(200, 150);
+          ctx.lineTo(230, 180);
+          ctx.stroke();
+        }
+        if (wrongGuesses > 4) { // left leg
+          ctx.beginPath();
+          ctx.moveTo(200, 200);
+          ctx.lineTo(170, 240);
+          ctx.stroke();
+        }
+        if (wrongGuesses > 5) { // right leg
+          ctx.beginPath();
+          ctx.moveTo(200, 200);
+          ctx.lineTo(230, 240);
+          ctx.stroke();
+        }
+      }
+
+      function updateHangman() {
+        // show word with underscores or letters guessed
+        let display = '';
+        let won = true;
+        for(let ch of hangmanWord) {
+          if(guessedLetters.has(ch)) {
+            display += ch + ' ';
+          } else {
+            display += '_ ';
+            won = false;
+          }
+        }
+        hangmanWordEl.textContent = display.trim();
+
+        // disable buttons used
+        Array.from(hangmanLettersEl.children).forEach(btn => {
+          btn.disabled = guessedLetters.has(btn.textContent);
+        });
+
+        if(wrongGuesses >= maxWrong) {
+          hangmanStatus.textContent = `Verloren! Das Wort war: ${hangmanWord}`;
+          hangmanLettersEl.querySelectorAll('button').forEach(b => b.disabled = true);
+        } else if(won) {
+          hangmanStatus.textContent = 'Gewonnen! 🎉';
+          hangmanLettersEl.querySelectorAll('button').forEach(b => b.disabled = true);
+        } else {
+          hangmanStatus.textContent = `Falsche Versuche: ${wrongGuesses} von ${maxWrong}`;
+        }
+        drawHangman();
+      }
+
+      function setupHangman() {
+        hangmanWord = pickHangmanWord();
+        guessedLetters.clear();
+        wrongGuesses = 0;
+        hangmanStatus.textContent = '';
+        hangmanLettersEl.innerHTML = '';
+        for(let c='a'.charCodeAt(0); c<='z'.charCodeAt(0); c++) {
+          const btn = document.createElement('button');
+          btn.textContent = String.fromCharCode(c);
+          btn.style.margin = '2px';
+          btn.style.padding = '6px 10px';
+          btn.style.fontSize = '1.1rem';
+          btn.addEventListener('click', () => {
+            if(guessedLetters.has(btn.textContent) || wrongGuesses >= maxWrong) return;
+            guessedLetters.add(btn.textContent);
+            if(!hangmanWord.includes(btn.textContent)) {
+              wrongGuesses++;
+            }
+            updateHangman();
+          });
+          hangmanLettersEl.appendChild(btn);
+        }
+        updateHangman();
+      }
+
+      hangmanRestart.addEventListener('click', setupHangman);
+      setupHangman();
+
+      // === GUESS THE NUMBER LOGIC ===
+      const guessInput = document.getElementById('guess-input');
+      const guessBtn = document.getElementById('guess-btn');
+      const guessResult = document.getElementById('guess-result');
+      const guessRestart = document.getElementById('guess-restart');
+
+      let secretNumber = 0;
+      let guessAttempts = 0;
+
+      function startGuessNumber() {
+        secretNumber = Math.floor(Math.random() * 100) + 1;
+        guessAttempts = 0;
+        guessResult.textContent = '';
+        guessInput.value = '';
+        guessInput.disabled = false;
+        guessBtn.disabled = false;
+      }
+
+      guessBtn.addEventListener('click', () => {
+        const guess = Number(guessInput.value);
+        if(guess < 1 || guess > 100 || isNaN(guess)) {
+          guessResult.textContent = 'Bitte eine gültige Zahl von 1 bis 100 eingeben!';
+          return;
+        }
+        guessAttempts++;
+        if(guess === secretNumber) {
+          guessResult.textContent = `Richtig! Du hast die Zahl in ${guessAttempts} Versuchen erraten! 🎉`;
+          guessInput.disabled = true;
+          guessBtn.disabled = true;
+        } else if(guess < secretNumber) {
+          guessResult.textContent = 'Zu niedrig!';
+        } else {
+          guessResult.textContent = 'Zu hoch!';
+        }
+      });
+
+      guessRestart.addEventListener('click', startGuessNumber);
+      startGuessNumber();
+
+      // === ROCK PAPER SCISSORS LOGIC ===
+      const rpsChoices = document.querySelectorAll('.rps-choice');
+      const rpsResult = document.getElementById('rps-result');
+      const rpsRestart = document.getElementById('rps-restart');
+
+      function computerRPSChoice() {
+        const choices = ['rock', 'paper', 'scissors'];
+        return choices[Math.floor(Math.random() * 3)];
+      }
+
+      function determineRPSWinner(user, computer) {
+        if(user === computer) return 'Unentschieden!';
+        if(
+          (user === 'rock' && computer === 'scissors') ||
+          (user === 'paper' && computer === 'rock') ||
+          (user === 'scissors' && computer === 'paper')
+        ) return 'Du gewinnst! 🎉';
+        return 'Computer gewinnt!';
+      }
+
+      function playRPS(userChoice) {
+        const compChoice = computerRPSChoice();
+        rpsResult.textContent = `Du: ${userChoice.charAt(0).toUpperCase() + userChoice.slice(1)} - Computer: ${compChoice.charAt(0).toUpperCase() + compChoice.slice(1)}. ${determineRPSWinner(userChoice, compChoice)}`;
+        rpsChoices.forEach(c => c.style.pointerEvents = 'none');
+      }
+
+      rpsChoices.forEach(choice => {
+        choice.addEventListener('click', () => {
+          playRPS(choice.dataset.choice);
+        });
+        choice.addEventListener('keydown', e => {
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            playRPS(choice.dataset.choice);
+          }
+        });
+      });
+
+      rpsRestart.addEventListener('click', () => {
+        rpsResult.textContent = '';
+        rpsChoices.forEach(c => c.style.pointerEvents = 'auto');
+      });
+    })();
+  </script>
 </body>
 </html>

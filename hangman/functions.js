@@ -160,55 +160,78 @@
       guessBtn.onclick = makeGuess;
       input.addEventListener('keyup', e => { if (e.key === 'Enter') makeGuess(); });
     }
+function ticTacToeGame(area) {
+  let board = Array(9).fill('');
+  let turn = 'X';
+  let gameOver = false;
 
-    // 2. Tic Tac Toe (unchanged, clean)
-    function ticTacToeGame(area) {
-      let board = Array(9).fill('');
-      let turn = 'X';
-      let gameOver = false;
-      area.innerHTML = `
-        <h2 class="text-2xl mb-2">Tic Tac Toe</h2>
-        <div id="ttt-board" class="grid grid-cols-3 gap-2"></div>
-        <p id="ttt-msg" class="mt-2 font-bold"></p>
-      `;
-      function drawBoard() {
-        const b = document.getElementById('ttt-board');
-        b.innerHTML = '';
-        board.forEach((cell, i) => {
-          const btn = document.createElement('button');
-          btn.textContent = cell;
-          btn.className = 'w-16 h-16 text-xl font-bold rounded-lg bg-white text-black';
-          btn.disabled = !!cell || gameOver;
-          btn.onclick = () => {
-            if (gameOver) return;
-            board[i] = turn;
-            turn = turn === 'X' ? 'O' : 'X';
-            drawBoard();
-            checkWin();
-          };
-          b.appendChild(btn);
-        });
-      }
-      function checkWin() {
-        const lines = [
-          [0,1,2],[3,4,5],[6,7,8],
-          [0,3,6],[1,4,7],[2,5,8],
-          [0,4,8],[2,4,6]
-        ];
-        for (const [a,b,c] of lines) {
-          if (board[a] && board[a] === board[b] && board[b] === board[c]) {
-            gameOver = true;
-            document.getElementById('ttt-msg').textContent = `${board[a]} wins!`;
-            return;
-          }
-        }
-        if (!board.includes('')) {
-          gameOver = true;
-          document.getElementById('ttt-msg').textContent = "It's a draw!";
-        }
-      }
+  area.innerHTML = `
+    <h2 class="ttt-title">Tic Tac Toe</h2>
+    <div id="ttt-board" class="ttt-board"></div>
+    <p id="ttt-status" class="ttt-status"></p>
+    <button id="ttt-restart" class="ttt-restart">Neustart</button>
+  `;
+
+  const boardElement = area.querySelector('#ttt-board');
+  const statusElement = area.querySelector('#ttt-status');
+  const restartButton = area.querySelector('#ttt-restart');
+
+  restartButton.onclick = () => {
+    board = Array(9).fill('');
+    turn = 'X';
+    gameOver = false;
+    statusElement.textContent = '';
+    restartButton.style.display = 'none';
+    drawBoard();
+  };
+
+  function drawBoard() {
+    boardElement.innerHTML = '';
+    board.forEach((cell, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'ttt-cell';
+      btn.textContent = cell;
+      btn.disabled = !!cell || gameOver;
+      btn.onclick = () => makeMove(i);
+      boardElement.appendChild(btn);
+    });
+    if (!gameOver) {
+      statusElement.textContent = `Am Zug: ${turn}`;
+    }
+  }
+
+  function makeMove(index) {
+    if (gameOver || board[index]) return;
+    board[index] = turn;
+    if (checkWin()) {
+      statusElement.textContent = `${turn} gewinnt! 🎉`;
+      gameOver = true;
+      restartButton.style.display = 'inline-block';
+    } else if (board.every(cell => cell)) {
+      statusElement.textContent = "Unentschieden!";
+      gameOver = true;
+      restartButton.style.display = 'inline-block';
+    } else {
+      turn = turn === 'X' ? 'O' : 'X';
       drawBoard();
     }
+  }
+
+  function checkWin() {
+    const winLines = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    return winLines.some(([a, b, c]) =>
+      board[a] && board[a] === board[b] && board[b] === board[c]
+    );
+  }
+
+  drawBoard();
+}
+
+
 
     // 3. Memory Match 16 cards
     function memoryGame(area) {
@@ -300,180 +323,50 @@
       input.addEventListener('keyup', e => { if (e.key === 'Enter') btn.click(); });
     }
 
-    // 5. Rock Paper Scissors with images
-    function rockPaperScissorsGame(area) {
-      const choices = ['rock', 'paper', 'scissors'];
-      const images = {
-        rock: '🪨',
-        paper: '📄',
-        scissors: '✂️',
-      };
-      let playerScore = 0;
-      let compScore = 0;
-      area.innerHTML = `
-        <h2 class="text-2xl mb-2">Rock Paper Scissors</h2>
-        <p>Score: You <span id="rps-player-score">0</span> - Computer <span id="rps-comp-score">0</span></p>
-        <div class="flex justify-center gap-6 mt-4">
-          <button class="rps-img" data-choice="rock" title="Rock">${images.rock}</button>
-          <button class="rps-img" data-choice="paper" title="Paper">${images.paper}</button>
-          <button class="rps-img" data-choice="scissors" title="Scissors">${images.scissors}</button>
-        </div>
-        <p class="mt-6 text-center text-xl" id="rps-result"></p>
-      `;
+(() => {
+  // ... existing code for other games ...
 
-      const buttons = area.querySelectorAll('.rps-img');
-      const result = document.getElementById('rps-result');
-      const playerScoreEl = document.getElementById('rps-player-score');
-      const compScoreEl = document.getElementById('rps-comp-score');
+  // === ROCK PAPER SCISSORS LOGIC ===
+  const rpsChoices = document.querySelectorAll('.rps-choice');
+  const rpsResult = document.getElementById('rps-result');
+  const rpsRestart = document.getElementById('rps-restart');
 
-      buttons.forEach(btn => {
-        btn.onclick = () => {
-          const playerChoice = btn.dataset.choice;
-          const compChoice = choices[Math.floor(Math.random() * choices.length)];
-          let res = '';
+  function computerRPSChoice() {
+    const choices = ['rock', 'paper', 'scissors'];
+    return choices[Math.floor(Math.random() * 3)];
+  }
 
-          if (playerChoice === compChoice) {
-            res = `It's a draw! Both chose ${playerChoice}`;
-          } else if (
-            (playerChoice === 'rock' && compChoice === 'scissors') ||
-            (playerChoice === 'paper' && compChoice === 'rock') ||
-            (playerChoice === 'scissors' && compChoice === 'paper')
-          ) {
-            res = `You win! ${playerChoice} beats ${compChoice}`;
-            playerScore++;
-          } else {
-            res = `You lose! ${compChoice} beats ${playerChoice}`;
-            compScore++;
-          }
-          playerScoreEl.textContent = playerScore;
-          compScoreEl.textContent = compScore;
-          result.textContent = res;
-        };
-      });
-    }
+  function determineRPSWinner(user, computer) {
+    if(user === computer) return 'Unentschieden!';
+    if(
+      (user === 'rock' && computer === 'scissors') ||
+      (user === 'paper' && computer === 'rock') ||
+      (user === 'scissors' && computer === 'paper')
+    ) return 'Du gewinnst! 🎉';
+    return 'Computer gewinnt!';
+  }
 
-    // 6. Space Defender - simple canvas shooter with multiple bullets & movement
-    function spaceDefenderGame(area) {
-      area.innerHTML = `
-        <h2 class="text-2xl mb-2">Space Defender</h2>
-        <canvas id="space-canvas" width="400" height="300" class="bg-black rounded-lg block mx-auto"></canvas>
-        <p class="mt-2 text-center text-white" id="space-msg">Use arrow keys to move, space to shoot.</p>
-        <p class="mt-1 text-center text-white">Score: <span id="space-score">0</span> | Lives: <span id="space-lives">3</span></p>
-      `;
-      const canvas = document.getElementById('space-canvas');
-      const ctx = canvas.getContext('2d');
-      const width = canvas.width;
-      const height = canvas.height;
+  function playRPS(userChoice) {
+    const compChoice = computerRPSChoice();
+    rpsResult.textContent = `Du: ${userChoice.charAt(0).toUpperCase() + userChoice.slice(1)} - Computer: ${compChoice.charAt(0).toUpperCase() + compChoice.slice(1)}. ${determineRPSWinner(userChoice, compChoice)}`;
+    rpsChoices.forEach(c => c.style.pointerEvents = 'none');
+  }
 
-      let player = { x: width / 2 - 15, y: height - 40, width: 30, height: 30, speed: 5 };
-      let bullets = [];
-      let enemies = [];
-      let score = 0;
-      let lives = 3;
-      let leftPressed = false;
-      let rightPressed = false;
-      let spacePressed = false;
-      let enemySpawnTimer = 0;
-
-      function drawPlayer() {
-        ctx.fillStyle = '#0ff';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
+  rpsChoices.forEach(choice => {
+    choice.addEventListener('click', () => {
+      playRPS(choice.dataset.choice);
+    });
+    choice.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        playRPS(choice.dataset.choice);
       }
-      function drawBullets() {
-        ctx.fillStyle = '#ff0';
-        bullets.forEach(b => ctx.fillRect(b.x, b.y, 5, 10));
-      }
-      function drawEnemies() {
-        ctx.fillStyle = '#f00';
-        enemies.forEach(e => ctx.fillRect(e.x, e.y, 30, 30));
-      }
-      function update() {
-        if (leftPressed && player.x > 0) player.x -= player.speed;
-        if (rightPressed && player.x + player.width < width) player.x += player.speed;
+    });
+  });
 
-        bullets.forEach((b, i) => {
-          b.y -= 7;
-          if (b.y < 0) bullets.splice(i, 1);
-        });
+  rpsRestart.addEventListener('click', () => {
+    rpsResult.textContent = '';
+    rpsChoices.forEach(c => c.style.pointerEvents = 'auto');
+  });
 
-        enemies.forEach((e, i) => {
-          e.y += 2;
-          if (e.y > height) {
-            enemies.splice(i, 1);
-            lives--;
-            updateLives();
-            if (lives <= 0) gameOver();
-          }
-        });
-
-        // Check collisions
-        bullets.forEach((b, bi) => {
-          enemies.forEach((e, ei) => {
-            if (
-              b.x < e.x + e.width &&
-              b.x + 5 > e.x &&
-              b.y < e.y + e.height &&
-              b.y + 10 > e.y
-            ) {
-              bullets.splice(bi, 1);
-              enemies.splice(ei, 1);
-              score++;
-              updateScore();
-            }
-          });
-        });
-
-        // Spawn enemies
-        enemySpawnTimer++;
-        if (enemySpawnTimer > 50) {
-          enemies.push({ x: Math.random() * (width - 30), y: -30, width: 30, height: 30 });
-          enemySpawnTimer = 0;
-        }
-      }
-
-      function draw() {
-        ctx.clearRect(0, 0, width, height);
-        drawPlayer();
-        drawBullets();
-        drawEnemies();
-      }
-
-      function updateScore() {
-        document.getElementById('space-score').textContent = score;
-      }
-      function updateLives() {
-        document.getElementById('space-lives').textContent = lives;
-      }
-      function gameOver() {
-        alert(`Game Over! Your score: ${score}`);
-        window.location.reload();
-      }
-
-      function gameLoop() {
-        update();
-        draw();
-        if (lives > 0) {
-          requestAnimationFrame(gameLoop);
-        }
-      }
-
-      document.onkeydown = e => {
-        if (e.code === 'ArrowLeft') leftPressed = true;
-        if (e.code === 'ArrowRight') rightPressed = true;
-        if (e.code === 'Space') {
-          if (!spacePressed) {
-            bullets.push({ x: player.x + player.width / 2 - 2.5, y: player.y });
-            spacePressed = true;
-          }
-        }
-      };
-      document.onkeyup = e => {
-        if (e.code === 'ArrowLeft') leftPressed = false;
-        if (e.code === 'ArrowRight') rightPressed = false;
-        if (e.code === 'Space') spacePressed = false;
-      };
-
-      updateScore();
-      updateLives();
-      gameLoop();
-    }
+});
